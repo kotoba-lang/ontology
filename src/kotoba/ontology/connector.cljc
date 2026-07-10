@@ -41,10 +41,22 @@
 (defn tag
   "Attach ontology provenance to an already-normalized fact map. Pure — the
   live fetch stays in the connector's own adapter; this only marks where a
-  fact came from and what object type it claims to satisfy."
+  fact came from and what object type it claims to satisfy.
+
+  Fails closed on an unregistered `connector-id`: throws rather than
+  silently stamping `:ontology/type nil` — a tag that names a source with
+  no known object-type is not provenance, it is a fabricated-looking label
+  that would make `kotoba.ontology.connector/tagged-conforms?` on it
+  ambiguous instead of false. Every caller in this fleet only ever tags
+  with an id it registered itself, so this can never fire from correct
+  code — it exists to catch a typo'd/unregistered id loudly instead of
+  producing a quietly-wrong fact."
   [connector-id fact & {:keys [reg fetched-at confidence]
                         :or {reg registry}}]
-  (let [{:keys [object-type]} (get-connector reg connector-id)]
+  (let [{:keys [object-type] :as connector} (get-connector reg connector-id)]
+    (when-not connector
+      (throw (ex-info (str "unregistered connector: " connector-id)
+                      {:connector-id connector-id :known-ids (mapv :id (connectors reg))})))
     (cond-> (assoc fact :ontology/type object-type :ontology/source connector-id)
       fetched-at (assoc :ontology/fetched-at fetched-at)
       confidence (assoc :ontology/confidence confidence))))
