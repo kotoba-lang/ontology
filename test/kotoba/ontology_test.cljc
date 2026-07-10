@@ -2,6 +2,12 @@
   (:require [clojure.test :refer [deftest is testing]]
             [kotoba.ontology :as ontology]))
 
+(deftest object-types-and-by-id-test
+  (testing "object-types returns the seeded registry vector directly"
+    (is (= [:tender] (mapv :id (ontology/object-types)))))
+  (testing "by-id indexes it by :id for O(1) lookup"
+    (is (= #{:tender} (set (keys (ontology/by-id)))))))
+
 (deftest get-type-test
   (testing "seeded :tender type resolves"
     (is (= "Procurement Tender / Opportunity" (:name (ontology/get-type :tender)))))
