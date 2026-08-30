@@ -46,6 +46,32 @@ Gotham-style intel product — see "Non-goals" below).
   `:ontology/source`, and optionally `:ontology/fetched-at` /
   `:ontology/confidence`.
 
+### How each function refuses
+
+The three failure signals are deliberately different values, because a
+caller has to act differently on each:
+
+| | unknown / unregistered id | known id, fact does not satisfy it |
+|---|---|---|
+| `ontology/conforms?` | `nil` — unanswerable | `false` |
+| `connector/tagged-conforms?` | `false` | `false` |
+| `connector/tag` | throws | n/a — `tag` does not check conformance |
+
+`conforms?` returns `nil` rather than `false` for an object type it does not
+know, so a typo'd type id cannot be read as a fact that failed validation.
+`tagged-conforms?` collapses both to `false` on purpose: it is the predicate
+for checking an *untrusted* claim, and a caller should never have to catch an
+exception to find out that a claim is unverifiable.
+
+`tag` is the one that throws, because it *writes* provenance rather than
+reading it. It refuses three ways, each carrying a `:reason` in `ex-data`
+(`:unregistered-connector`, `:connector-without-object-type`,
+`:provenance-overwrite`) so the caller can tell them apart without matching
+on the message. The last two exist because both would otherwise produce a
+well-formed fact that is quietly wrong: one naming a source while claiming
+`:ontology/type nil`, and one that came from a different connector than the
+provenance on it now says. Re-tagging with the *same* id stays idempotent.
+
 Neither namespace fetches anything. Fetch/parse stays exactly where
 `kotoba-lang/goyoukiki` already put it for `jp.kkj` and `jp.geps`: a
 per-source JVM-only adapter that does the HTTP call and maps the raw
@@ -102,3 +128,17 @@ left as fleet-wide follow-up, not part of this initial capability library.
 clojure -M:test
 clojure -M:lint
 ```
+
+`test/kotoba/ontology/registry_test.cljc` asserts properties of the two
+registries *as tables* — referential integrity between them, unique ids,
+`:key` drawn from `:attributes` — rather than naming `:tender` and `:jp.kkj`
+by hand. Those are the tests that have to grow when a row is added, and they
+are what catches a row whose `:object-type` is misspelled: such a connector
+still resolves and still tags, and `tagged-conforms?` then returns `false`
+for every fact it ever produces, which from the call site is
+indistinguishable from facts that genuinely do not conform.
+
+The suite is itself checked by mutation, in the superproject's
+`scripts/maturity-loop/mutations.edn` (`nbb scripts/maturity-loop/run.cljs
+--only ontology`): nine ways this library could silently regress, each
+replayed to confirm it turns the suite red and names the invariant it broke.
