@@ -129,7 +129,7 @@ clojure -M:test
 clojure -M:lint
 ```
 
-`test/kotoba/ontology/registry_test.cljc` asserts properties of the two
+`test/kotoba/ontology/registry_test.cljk` asserts properties of the two
 registries *as tables* — referential integrity between them, unique ids,
 `:key` drawn from `:attributes` — rather than naming `:tender` and `:jp.kkj`
 by hand. Those are the tests that have to grow when a row is added, and they
