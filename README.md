@@ -125,8 +125,8 @@ left as fleet-wide follow-up, not part of this initial capability library.
 ## Test
 
 ```sh
-clojure -M:test
-clojure -M:lint
+kbb -M:test
+kbb -M:lint
 ```
 
 `test/kotoba/ontology/registry_test.cljk` asserts properties of the two
@@ -139,6 +139,6 @@ for every fact it ever produces, which from the call site is
 indistinguishable from facts that genuinely do not conform.
 
 The suite is itself checked by mutation, in the superproject's
-`scripts/maturity-loop/mutations.edn` (`nbb scripts/maturity-loop/run.cljs
+`scripts/maturity-loop/mutations.edn` (`kbb --backend sci scripts/maturity-loop/run.cljk
 --only ontology`): nine ways this library could silently regress, each
 replayed to confirm it turns the suite red and names the invariant it broke.
