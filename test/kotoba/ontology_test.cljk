@@ -1,5 +1,5 @@
 (ns kotoba.ontology-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.ontology :as ontology]))
 
 (deftest object-types-and-by-id-test

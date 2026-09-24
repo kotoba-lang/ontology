@@ -1,5 +1,5 @@
 (ns kotoba.ontology.connector-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.ontology.connector :as connector]))
 
 (deftest get-connector-test
