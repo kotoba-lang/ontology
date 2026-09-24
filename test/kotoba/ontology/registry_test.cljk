@@ -16,7 +16,7 @@
 
   So these assert properties of the tables, and they are the tests that have
   to grow when a row is added."
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.ontology :as ontology]
             [kotoba.ontology.connector :as connector]))
 
